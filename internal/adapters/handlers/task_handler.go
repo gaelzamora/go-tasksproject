@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -19,7 +20,9 @@ func NewTaskHandler(service *application.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
-	tasks, err := h.service.GetAllTasks()
+	userID := r.Context().Value("user_id").(uint)
+
+	tasks, err := h.service.GetAllTasksByUser(userID)
 	if err != nil {
 		http.Error(w, "Error obteniendo tareas", http.StatusInternalServerError)
 		return
@@ -29,6 +32,8 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("user_id").(uint)
+
 	var task domain.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
 	if err != nil {
@@ -36,14 +41,15 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.CreateTask(task)
+	createdTask, err := h.service.CreateTask(userID, &task) // Pasar un puntero
 	if err != nil {
 		http.Error(w, "Error creando tarea", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(task)
+
+	fmt.Printf("Created Task: %+v\n", createdTask) // Depuración
+
+	w.Write([]byte("Tarea creada"))
 }
 
 func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +96,7 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 
 	task, err := h.service.GetTaskByID(uint(id))
 	if err != nil {
+		fmt.Println("Tarea no encontrada")
 		http.Error(w, "Tarea no encontrada", http.StatusNotFound)
 		return
 	}

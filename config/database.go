@@ -19,7 +19,6 @@ func ConnectDB() *gorm.DB {
 	}
 
 	fmt.Println("✅ Base de datos conectada con éxito")
-	db.AutoMigrate(&domain.Task{})
-	db.AutoMigrate(&domain.User{})
+	db.AutoMigrate(&domain.User{}, &domain.Task{})
 	return db
 }

@@ -31,11 +31,11 @@ func main() {
 
 	protected := router.PathPrefix("/api").Subrouter()
 	protected.Use(handlers.AuthMiddleware)
-	protected.HandleFunc("/tasks", taskHandler.GetTasks).Methods("GET")
 	protected.HandleFunc("/tasks", taskHandler.CreateTask).Methods("POST")
+	protected.HandleFunc("/tasks", taskHandler.GetTasks).Methods("GET")
 	protected.HandleFunc("/tasks/{id}", taskHandler.GetTask).Methods("GET")
-	protected.HandleFunc("/tasks/{id}", taskHandler.DeleteTask).Methods("DELETE")
 	protected.HandleFunc("/tasks/{id}", taskHandler.UpdateTask).Methods("PUT")
+	protected.HandleFunc("/tasks/{id}", taskHandler.DeleteTask).Methods("DELETE")
 
 	fmt.Println("🔵 Servidor corriendo en http://localhost:3000")
 	log.Fatal(http.ListenAndServe(":3000", router))
